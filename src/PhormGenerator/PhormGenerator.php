@@ -3,6 +3,8 @@
 namespace PhormGenerator;
 
 
+use Phalcon\Config;
+
 class PhormGenerator extends Component
 {
     const CONFIG = [
@@ -13,8 +15,48 @@ class PhormGenerator extends Component
         'baseView' => 'Base class for views (default: Phalcon\Mvc\View)',
     ];
 
+    /** @var Schema[] */
+    protected $components;
+
+    public function getSchemas()
+    {
+        return $this->components;
+    }
+
     public function __construct(...$schemas)
     {
+        global $config;
+        if(!isset($config) || !$config instanceof Config) {
+            $config = null;
+            // Let's look around in cwd..
+            foreach([
+                        'config.php',
+                        'app/config.php',
+                        'config/config.php',
+                    ] as $path) {
+                if (is_file($path)) {
+                    $r = require $path;
+                    if($r instanceof Config) {
+                        $config = $r;
+                        break;
+                    }
+                    if($config instanceof Config) {
+                        break;
+                    }
+                }
+            }
+        }
+        if(!$config instanceof Config) {
+            throw new \RuntimeException('$config must be a global instance of '.Config::class);
+        }
+
+        if(!isset($config['db'])) {
+            if(!isset($config['database'])) {
+                throw new \RuntimeException('Missing $config key: database|db');
+            }
+            $config->offsetSet('db', $config->offsetGet('database'));
+        }
+        $this->getDI()->setShared('config',$config);
         parent::__construct('phorm-generator', $this);
         if(count($schemas) < 1) {
             $schemas[] = $this->config->db->dbname;

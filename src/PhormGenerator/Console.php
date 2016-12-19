@@ -16,38 +16,7 @@ class Console extends \Phalcon\Cli\Console
 {
     public function __construct($di=null)
     {
-        global $config;
-        if(!isset($config) || !$config instanceof Config) {
-            $config = null;
-            // Let's look around in cwd..
-            foreach([
-                        'config.php',
-                        'app/config.php',
-                        'config/config.php',
-                    ] as $path) {
-                if (is_file($path)) {
-                    $r = require $path;
-                    if($r instanceof Config) {
-                        $config = $r;
-                        break;
-                    }
-                    if($config instanceof Config) {
-                        break;
-                    }
-                }
-            }
-        }
-        if(!$config instanceof Config) {
-            throw new \RuntimeException('$config must be a global instance of '.Config::class);
-        }
-
-        if(!isset($config['db'])) {
-            if(!isset($config['database'])) {
-                throw new \RuntimeException('Missing $config key: database|db');
-            }
-            $config->offsetSet('db', $config->offsetGet('database'));
-        }
-
+        $config = $di->get('config');
         $cfg = null;
         foreach(['phorm-generator'] as $k) {
             if(isset($config[$k])) {
