@@ -28,6 +28,7 @@ class Decorator implements DecoratorInterface
     {
         $cfg = $table->config['phorm-generator'];
         $content = [];
+        $content[] = $this->getInitialize([],[]);
         foreach($table->getColumns() as $column) {
             $content[] = $this->getProperty($column->getName(), $column->getTypeHint());
         }
@@ -124,6 +125,35 @@ class Decorator implements DecoratorInterface
         }
         $r.= "}\r\n";
         return $r;
+    }
+
+    function getInitialize(array $relations, ...$content)
+    {
+        $r = "\tpublic function initialize()\r\n";
+        $r.= "\t{\r\n\t\t// init relations\r\n";
+        foreach($relations as $relation) {
+            $r.= $this->getRelation($relation[0],$relation[1],$relation[2],$relation[3]);
+        }
+        foreach($content as $k=>$v) {
+            $content[$k] = "\t\t".trim($v);
+        }
+        $r.= join("\r\n", $content);
+        $r.= "\t}\r\n";
+        return $r;
+    }
+
+    function getRelation($type, array $fields, $referencedModel, array $referencedFields, array $options=[])
+    {
+        $opt = '';
+        foreach($options as $k=>$v) {
+            $opt.= "\t\t\t'$k' => '".escapeshellarg($v)."',\r\n";
+        }
+        return "\t\t\$this->$type('".join("','",$fields)."', ${referencedModel}::class, '".join("','",$referencedFields)."', [\r\n$opt]);\r\n";
+    }
+
+    function getRelationHint($type, array $fields, $referencedModel, array $referencedFields, array $options=[])
+    {
+
     }
 
     function getTraits(array $aliasToTraits=[])
