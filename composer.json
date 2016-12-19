@@ -1,0 +1,23 @@
+{
+  "name": "lajosbencz/phorm-generator",
+  "description": "Custorm model class generator for Phalcon ORM",
+  "minimum-stability": "dev",
+  "license": "phalcon",
+  "authors": [
+    {
+      "name": "Lajos Bencz",
+      "email": "lazos@lazos.me"
+    }
+  ],
+  "require": {
+    "kevinlebrun/colors.php": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "@stable"
+  },
+  "autoload": {
+    "psr-4": {
+      "PhormGenerator\\": "src/PhormGenerator"
+    }
+  }
+}
