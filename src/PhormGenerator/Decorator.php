@@ -24,11 +24,12 @@ class Decorator implements DecoratorInterface
     /** @var array */
     protected $hasManyToMany = [];
 
+
     function generateAbstract(Table $table)
     {
         $cfg = $table->config['phorm-generator'];
         $content = [];
-        $content[] = $this->getInitialize([],[]);
+        $content[] = $this->getInitialize([]);
         foreach($table->getColumns() as $column) {
             $content[] = $this->getProperty($column->getName(), $column->getTypeHint());
         }
@@ -392,57 +393,6 @@ class Decorator implements DecoratorInterface
     public function initialize() {
         if(!is_dir($this->config->scaffold->model->output)) {
             mkdir($this->config->scaffold->model->output, 0777, true);
-        }
-        foreach($this->db->listTables() as $table) {
-            $this->tables[$table] = new Table($table);
-        }
-        foreach($this->tables() as $t) {
-            foreach($t->references() as $r) {
-                $tc = $r->getColumns();
-                $rc = $r->getReferencedColumns();
-                $tc = $tc[0];
-                $rc = $rc[0];
-                $this->references[$t->getName()][$tc][$r->getReferencedTable()][$rc] = true;
-            }
-        }
-        foreach($this->tables() as $t) {
-            $tn = $t->getName();
-            if(isset($this->references[$tn])) {
-                foreach($this->references[$tn] as $tc => $refs) {
-                    $an = Text::camelize(preg_replace('/_id$/','',$tc));
-                    foreach($refs as $rt => $refCols) {
-                        foreach($refCols as $rc => $true) {
-                            $this->belongsTo[$tn][$tc][$rt][$rc] = $an;
-                        }
-                    }
-                }
-            }
-            foreach($this->references as $rt => $refCols) {
-                foreach($refCols as $rc => $refs) {
-                    $an = Text::camelize(preg_replace('/_id$/','',$rc));
-                    if(isset($refs[$tn])) {
-                        foreach($refs[$tn] as $tc => $true) {
-                            $this->hasMany[$tn][$tc][$rt][$rc] = $an;
-                        }
-                    }
-                }
-            }
-        }
-        foreach($this->hasMany as $tn => $cols) {
-            foreach($cols as $tc => $refs) {
-                foreach($refs as $rt => $refCols) {
-                    $alias = Text::camelize($rt);
-                    if(count($refCols) > 1) {
-                        foreach($refCols as $rc => $av) {
-                            $this->hasMany[$tn][$tc][$rt][$rc] = $alias.$av;
-                        }
-                    } else {
-                        foreach($refCols as $rc => $av) {
-                            $this->hasMany[$tn][$tc][$rt][$rc] = $alias;
-                        }
-                    }
-                }
-            }
         }
     }
     public function tables() {

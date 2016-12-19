@@ -56,6 +56,17 @@ class PhormGenerator extends Component
             }
             $config->offsetSet('db', $config->offsetGet('database'));
         }
+        $this->getDI()->setShared('config', $config);
+        $cfg = null;
+        foreach(['phorm-generator'] as $k) {
+            if(isset($config[$k])) {
+                $cfg = $config->$k->toArray();
+                break;
+            }
+        }
+        if(!$cfg) {
+            throw new \RuntimeException('Missing $config key: phorm-generator');
+        }
         $this->getDI()->setShared('config',$config);
         parent::__construct('phorm-generator', $this);
         if(count($schemas) < 1) {
